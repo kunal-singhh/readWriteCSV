@@ -19,6 +19,17 @@ const writeCSV = (data, filePath) => {
   });
 };
 
+const writeCSVRow = (row, index, filePath) => {
+  return new Promise((resolve, reject) => {
+    const ws = fs.createWriteStream(filePath, { flags: 'a' }); // 'a' for append mode
+    fastcsv
+      .write([row], { headers: index == 0, includeEndRowDelimiter: true })
+      .pipe(ws)
+      .on('finish', resolve)
+      .on('error', reject);
+  });
+};
+
 // Read the CSV file
 const readCSV = (filePath) => {
   return new Promise((resolve, reject) => {
@@ -37,7 +48,13 @@ async function main() {
 
   try {
     // Write the data to CSV
-    await writeCSV(data, filePath);
+    // await writeCSV(data, filePath);
+    // console.log('CSV file written successfully');
+
+    // Write the data to CSV one row at a time
+    for (let i = 0; i < data.length; i++) {
+      await writeCSVRow(data[i], i, filePath);
+    }
     console.log('CSV file written successfully');
 
     // Read the data from CSV
